@@ -1,0 +1,44 @@
+name: Quay.io description
+description: Update a Quay.io repository's description from a markdown file.
+author: Sergey Kanafyev
+
+branding:
+  icon: book-open
+  color: blue
+
+inputs:
+  namespace:
+    description: >
+      Quay.io namespace to publish under. For a robot account username in
+      the form "org+robotname", pass it as-is — the "+robotname" suffix is
+      stripped automatically to derive the organization namespace.
+    required: true
+  repository:
+    description: Quay.io repository name (without the namespace, e.g. "workflow")
+    required: true
+  api-token:
+    description: Quay.io OAuth application token
+    required: true
+  file:
+    description: Path to a markdown file whose full content becomes the repository description.
+    required: false
+    default: QUAY.md
+
+runs:
+  using: composite
+  steps:
+    - name: Update description
+      shell: bash
+      env:
+        QUAY_NAMESPACE: ${{ inputs.namespace }}
+        QUAY_API_TOKEN: ${{ inputs.api-token }}
+        QUAY_REPOSITORY: ${{ inputs.repository }}
+        QUAY_FILE: ${{ inputs.file }}
+      run: |
+        curl -fsSL -X PUT "https://quay.io/api/v1/repository/${QUAY_NAMESPACE%%+*}/$QUAY_REPOSITORY" \
+          -H "Authorization: Bearer $QUAY_API_TOKEN" \
+          -H "Content-Type: application/json" \
+          -H "X-Requested-With: XMLHttpRequest" \
+          --data-binary "$(jq -n \
+            --rawfile description "$QUAY_FILE" \
+            '{description: $description}')"
