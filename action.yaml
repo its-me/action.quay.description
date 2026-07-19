@@ -1,4 +1,4 @@
-name: Quay.io description
+name: Quay.io repository description
 description: Update a Quay.io repository's description from a markdown file.
 author: Sergey Kanafyev
 
