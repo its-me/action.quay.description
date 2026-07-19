@@ -1,4 +1,4 @@
-# action.quay.description
+# Quay.io description
 
 A GitHub Action that updates a Quay.io repository's description from a
 markdown file.
