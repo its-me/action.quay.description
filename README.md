@@ -3,6 +3,17 @@
 A GitHub Action that updates a Quay.io repository's description from a
 markdown file.
 
+## Why this exists
+
+- It's a plain composite action — a handful of `curl`/`jq` calls —
+  with no Docker daemon required to start it, so it runs on minimal
+  runners, including this account's `ubuntu-slim` runner.
+- It parses Quay's `org+robotname` robot-account username format
+  automatically, rather than expecting the namespace pre-split.
+- It rewrites relative markdown links/images to absolute GitHub URLs
+  (`url-completion`), since Quay renders the description outside the
+  repository's context.
+
 ## Usage
 
 ```yaml
