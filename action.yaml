@@ -19,10 +19,24 @@ inputs:
   api-token:
     description: Quay.io OAuth application token
     required: true
-  file:
+  description-file:
     description: Path to a markdown file whose full content becomes the repository description.
     required: false
     default: QUAY.md
+  url-completion:
+    description: >
+      Rewrite relative markdown links and image references in the
+      description to absolute GitHub URLs (images to "raw" links, other
+      relative links to "blob" links), since Quay.io renders the
+      description outside the repository's context. Covers plain
+      "![alt](path)" and "[label](path)" references; titled links/images,
+      in-page anchors, and image-wrapped-in-link badges are left as-is.
+    required: false
+    default: "false"
+  image-extensions:
+    description: File extensions treated as images when url-completion is enabled.
+    required: false
+    default: bmp,gif,jpg,jpeg,png,svg,webp
 
 runs:
   using: composite
@@ -33,12 +47,29 @@ runs:
         QUAY_NAMESPACE: ${{ inputs.namespace }}
         QUAY_API_TOKEN: ${{ inputs.api-token }}
         QUAY_REPOSITORY: ${{ inputs.repository }}
-        QUAY_FILE: ${{ inputs.file }}
+        QUAY_FILE: ${{ inputs.description-file }}
+        QUAY_URL_COMPLETION: ${{ inputs.url-completion }}
+        QUAY_IMAGE_EXTS: ${{ inputs.image-extensions }}
+        REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        REF_NAME: ${{ github.ref_name }}
       run: |
+        description=$(cat "$QUAY_FILE")
+        if [ "$QUAY_URL_COMPLETION" = "true" ]; then
+          description=$(jq -n \
+            --arg content "$description" \
+            --arg exts "$(echo "$QUAY_IMAGE_EXTS" | sed 's/,/|/g')" \
+            --arg raw "$REPO_URL/raw/$REF_NAME/" \
+            --arg blob "$REPO_URL/blob/$REF_NAME/" \
+            -r '
+              $content
+              | gsub("(?<left>!\\[[^\\]]*\\])\\((?<url>[^:)#][^:)]*\\.(" + $exts + "))\\)"; "\(.left)(" + $raw + "\(.url))")
+              | gsub("(?<left>(?<!!)\\[[^\\]]+\\])\\((?<url>[^:)#][^:)]*)\\)"; "\(.left)(" + $blob + "\(.url))")
+            ')
+        fi
         curl -fsSL -X PUT "https://quay.io/api/v1/repository/${QUAY_NAMESPACE%%+*}/$QUAY_REPOSITORY" \
           -H "Authorization: Bearer $QUAY_API_TOKEN" \
           -H "Content-Type: application/json" \
           -H "X-Requested-With: XMLHttpRequest" \
           --data-binary "$(jq -n \
-            --rawfile description "$QUAY_FILE" \
+            --arg description "$description" \
             '{description: $description}')"
