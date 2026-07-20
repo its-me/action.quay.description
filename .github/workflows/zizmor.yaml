@@ -15,12 +15,7 @@ jobs:
   zizmor:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: its-me/action.zizmor@v1
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          config: |
-            rules:
-              artipacked:
-                disable: true
-              unpinned-uses:
-                disable: true
+          persist-credentials: false
+      - uses: its-me/action.zizmor@ff06ae628ae4304e6d711c1c61c761b9d097c96e # v1.0.1
