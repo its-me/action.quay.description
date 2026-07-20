@@ -99,7 +99,6 @@ runs:
           -X PUT "https://quay.io/api/v1/repository/${QUAY_NAMESPACE%%+*}/$QUAY_REPOSITORY" \
           -H "Authorization: Bearer $QUAY_API_TOKEN" \
           -H "Content-Type: application/json" \
-          -H "X-Requested-With: XMLHttpRequest" \
           --data-binary "$(jq -n \
             --arg description "$description" \
             '{description: $description}')"
