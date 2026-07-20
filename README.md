@@ -51,11 +51,14 @@ there's no short/full split, since Quay.io's API only has a single
 ## Length limit
 
 The description is truncated to 25,000 bytes in a Unicode-safe way —
-truncation always lands on a whole character, never mid-codepoint. This
-isn't a confirmed Quay.io limit (its `description` column is an
-unbounded `TEXT` field); it's a conservative safety cap matching Docker
-Hub's known limit. When truncation happens, a `::warning::` annotation
-is emitted in the job log.
+truncation always lands on a whole character, never mid-codepoint — and
+then backs off to the last complete line, so a cut never lands mid-way
+through a markdown link or image reference (relevant since
+`url-completion` can expand a short relative path into a much longer
+absolute URL). This isn't a confirmed Quay.io limit (its `description`
+column is an unbounded `TEXT` field); it's a conservative safety cap
+matching Docker Hub's known limit. When truncation happens, a
+`::warning::` annotation is emitted in the job log.
 
 ## Retries
 

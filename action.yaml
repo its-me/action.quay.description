@@ -77,7 +77,11 @@ runs:
                 explode | map(if . < 128 then 1 elif . < 2048 then 2 elif . < 65536 then 3 else 4 end) | add // 0;
               def truncate_bytes(n):
                 if (. | utf8len) <= n then .
-                else . as $s | first(range(n; -1; -1) as $k | $s[0:$k] | select((. | utf8len) <= n))
+                else
+                  . as $s
+                  | (first(range(n; -1; -1) as $k | $s[0:$k] | select((. | utf8len) <= n))) as $cut
+                  | ($cut | rindex("\n")) as $nl
+                  | if $nl then $cut[0:$nl] else $cut end
                 end;
               $content | truncate_bytes($max)
             ')
