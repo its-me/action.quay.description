@@ -17,7 +17,7 @@ markdown file.
 ## Usage
 
 ```yaml
-name: Update descriptions
+name: Quay.io Description Update
 
 on:
   push:
@@ -27,7 +27,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  update-quay:
+  quay:
     runs-on: ubuntu-slim
     permissions:
       contents: read
