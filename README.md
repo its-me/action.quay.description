@@ -33,7 +33,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-      - uses: its-me/action.quay.description@v0
+      - uses: its-me/action.quay.description@v1
         with:
           namespace: ${{ secrets.QUAY_USERNAME }}
           api-token: ${{ secrets.QUAY_API_TOKEN }}
