@@ -57,11 +57,14 @@ runs:
         if [ "$QUAY_URL_COMPLETION" = "true" ]; then
           description=$(jq -n \
             --arg content "$description" \
-            --arg exts "$(echo "$QUAY_IMAGE_EXTS" | sed 's/,/|/g')" \
+            --arg exts_raw "$QUAY_IMAGE_EXTS" \
             --arg raw "$REPO_URL/raw/$REF_NAME/" \
             --arg blob "$REPO_URL/blob/$REF_NAME/" \
             -r '
-              $content
+              def escape_regex:
+                gsub("(?<c>[\\^$.|?*+(){}\\[\\]\\\\])"; "\\\(.c)");
+              ($exts_raw | split(",") | map(escape_regex) | join("|")) as $exts
+              | $content
               | gsub("(?<left>!\\[[^\\]]*\\])\\((?<url>[^:)#][^:)]*\\.(" + $exts + "))\\)"; "\(.left)(" + $raw + "\(.url))")
               | gsub("(?<left>(?<!!)\\[[^\\]]+\\])\\((?<url>[^:)#][^:)]*)\\)"; "\(.left)(" + $blob + "\(.url))")
             ')
