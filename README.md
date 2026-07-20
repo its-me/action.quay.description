@@ -48,6 +48,15 @@ entire content becomes the repository description as-is. Unlike
 there's no short/full split, since Quay.io's API only has a single
 `description` field.
 
+## Length limit
+
+The description is truncated to 25,000 bytes in a Unicode-safe way —
+truncation always lands on a whole character, never mid-codepoint. This
+isn't a confirmed Quay.io limit (its `description` column is an
+unbounded `TEXT` field); it's a conservative safety cap matching Docker
+Hub's known limit. When truncation happens, a `::warning::` annotation
+is emitted in the job log.
+
 ## License
 
 This project is licensed under the MIT License.
