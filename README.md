@@ -57,6 +57,13 @@ unbounded `TEXT` field); it's a conservative safety cap matching Docker
 Hub's known limit. When truncation happens, a `::warning::` annotation
 is emitted in the job log.
 
+## Retries
+
+The description update request retries up to 3 times (5-second delay)
+on transient failures — timeouts, connection refused, and HTTP
+408/429/5xx — via `curl --retry`. Permanent failures (e.g. a bad
+`api-token`) are not retried.
+
 ## License
 
 This project is licensed under the MIT License.
