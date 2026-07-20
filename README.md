@@ -37,7 +37,7 @@ jobs:
 | `repository`       | Quay.io repository name, without the namespace (e.g. `workflow`).                                                                   | _(none)_  |
 | `api-token`        | Quay.io OAuth application token.                                                                                                    | _(none)_  |
 | `description-file` | Path to a markdown file whose full content becomes the repository description.                                                     | `QUAY.md` |
-| `url-completion`   | Rewrite relative markdown links/images in the description to absolute GitHub URLs, since Quay.io renders the description outside the repository's context. Covers plain `![alt](path)` and `[label](path)` references; titled links/images, in-page anchors, and image-wrapped-in-link badges are left as-is. | `false`   |
+| `url-completion`   | Rewrite relative markdown links/images in the description to absolute GitHub URLs, since Quay.io renders the description outside the repository's context. Covers `![alt](path)` and `[label](path)` references (with or without a title), `[![alt](img)](path)` badge-links, and `[ref]: path` link reference definitions. In-page anchors (`#section`) are deliberately left as-is. | `false`   |
 | `image-extensions` | Comma-separated file extensions treated as images when `url-completion` is enabled.                                                 | `bmp,gif,jpg,jpeg,png,svg,webp` |
 
 ## Description file format
