@@ -78,13 +78,19 @@ runs:
             -r '
               def utf8len:
                 explode | map(if . < 128 then 1 elif . < 2048 then 2 elif . < 65536 then 3 else 4 end) | add // 0;
+              def close_unclosed_fence:
+                . as $s
+                | ($s | split("\n")) as $lines
+                | (reduce $lines[] as $line (false; if ($line | test("^```")) then (. | not) else . end)) as $in_fence
+                | if $in_fence then $s + "\n```" else $s end;
               def truncate_bytes(n):
                 if (. | utf8len) <= n then .
                 else
                   . as $s
                   | (first(range(n; -1; -1) as $k | $s[0:$k] | select((. | utf8len) <= n))) as $cut
                   | ($cut | rindex("\n")) as $nl
-                  | if $nl then $cut[0:$nl] else $cut end
+                  | (if $nl then $cut[0:$nl] else $cut end)
+                  | close_unclosed_fence
                 end;
               $content | truncate_bytes($max)
             ')
