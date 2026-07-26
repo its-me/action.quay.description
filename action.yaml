@@ -56,48 +56,25 @@ runs:
         description=$(cat "$QUAY_FILE")
         if [ "$QUAY_URL_COMPLETION" = "true" ]; then
           description=$(jq -n \
+            --arg mode url-completion \
             --arg content "$description" \
             --arg exts_raw "$QUAY_IMAGE_EXTS" \
             --arg raw "$REPO_URL/raw/$REF_NAME/" \
             --arg blob "$REPO_URL/blob/$REF_NAME/" \
-            -r '
-              def escape_regex:
-                gsub("(?<c>[\\^$.|?*+(){}\\[\\]\\\\])"; "\\\(.c)");
-              ($exts_raw | split(",") | map(escape_regex) | join("|")) as $exts
-              | $content
-              | gsub("(?<left>!\\[[^\\]]*\\])\\((?<url>[^:)#\\s\"][^:)\\s\"]*\\.(" + $exts + "))(?<title>(?:\\s+\"[^\"]*\")?)\\)"; "\(.left)(" + $raw + "\(.url)\(.title))")
-              | gsub("(?<left>\\[!\\[[^\\]]*\\]\\([^)]*\\)\\])\\((?<url>[^:)#\\s\"][^:)\\s\"]*)(?<title>(?:\\s+\"[^\"]*\")?)\\)"; "\(.left)(" + $blob + "\(.url)\(.title))")
-              | gsub("(?<left>(?<!!)\\[[^\\]]+\\])\\((?<url>[^:)#\\s\"][^:)\\s\"]*)(?<title>(?:\\s+\"[^\"]*\")?)\\)"; "\(.left)(" + $blob + "\(.url)\(.title))")
-              | split("\n")
-              | map(gsub("(?<left>^\\[[^\\]]+\\]:[ \\t]+)(?<url>[^:)#\\s\"][^:)\\s\"]*)(?=\\s|$)"; "\(.left)" + $blob + "\(.url)"))
-              | join("\n")
-            ')
+            --argjson max 0 \
+            -r -f "$GITHUB_ACTION_PATH/markdown.jq")
         fi
         max_bytes=25000
         if [ "$(printf '%s' "$description" | wc -c)" -gt "$max_bytes" ]; then
           echo "::warning::Description exceeds ${max_bytes} bytes and has been truncated. Quay.io does not document a hard limit for this field; this is a conservative safety cap."
           description=$(jq -n \
+            --arg mode truncate \
             --arg content "$description" \
+            --arg exts_raw "" \
+            --arg raw "" \
+            --arg blob "" \
             --argjson max "$max_bytes" \
-            -r '
-              def utf8len:
-                explode | map(if . < 128 then 1 elif . < 2048 then 2 elif . < 65536 then 3 else 4 end) | add // 0;
-              def close_unclosed_fence:
-                . as $s
-                | ($s | split("\n")) as $lines
-                | (reduce $lines[] as $line (false; if ($line | test("^```")) then (. | not) else . end)) as $in_fence
-                | if $in_fence then $s + "\n```" else $s end;
-              def truncate_bytes(n):
-                if (. | utf8len) <= n then .
-                else
-                  . as $s
-                  | (first(range(n; -1; -1) as $k | $s[0:$k] | select((. | utf8len) <= n))) as $cut
-                  | ($cut | rindex("\n")) as $nl
-                  | (if $nl then $cut[0:$nl] else $cut end)
-                  | close_unclosed_fence
-                end;
-              $content | truncate_bytes($max)
-            ')
+            -r -f "$GITHUB_ACTION_PATH/markdown.jq")
         fi
         curl -fsSL --retry 3 --retry-delay 5 --retry-connrefused \
           -X PUT "https://quay.io/api/v1/repository/${QUAY_NAMESPACE%%+*}/$QUAY_REPOSITORY" \
