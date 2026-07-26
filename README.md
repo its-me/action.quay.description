@@ -33,9 +33,9 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-      - uses: its-me/action.quay.description@v1
+      - uses: its-me/action.quay.description@v2
         with:
-          namespace: ${{ secrets.QUAY_USERNAME }}
+          username: ${{ secrets.QUAY_USERNAME }}
           api-token: ${{ secrets.QUAY_API_TOKEN }}
           repository: workflow
 ```
@@ -44,7 +44,7 @@ jobs:
 
 | Name               | Description                                                                                                                     | Default   |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| `namespace`        | Quay.io namespace to publish under. For a robot account username in the form `org+robotname`, pass it as-is — the `+robotname` suffix is stripped automatically. | _(none)_  |
+| `username`         | Quay.io username to publish under. For a robot account username in the form `org+robotname`, pass it as-is — the `+robotname` suffix is stripped automatically. | _(none)_  |
 | `repository`       | Quay.io repository name, without the namespace (e.g. `workflow`).                                                                   | _(none)_  |
 | `api-token`        | Quay.io OAuth application token.                                                                                                    | _(none)_  |
 | `description-file` | Path to a markdown file whose full content becomes the repository description.                                                     | `QUAY.md` |

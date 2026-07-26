@@ -7,9 +7,9 @@ branding:
   color: blue
 
 inputs:
-  namespace:
+  username:
     description: >
-      Quay.io namespace to publish under. For a robot account username in
+      Quay.io username to publish under. For a robot account username in
       the form "org+robotname", pass it as-is — the "+robotname" suffix is
       stripped automatically to derive the organization namespace.
     required: true
@@ -41,10 +41,17 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Resolve Quay namespace
+      id: namespace
+      shell: bash
+      env:
+        QUAY_USERNAME: ${{ inputs.username }}
+      run: echo "value=${QUAY_USERNAME%%+*}" >> "$GITHUB_OUTPUT"
+
     - name: Update description
       shell: bash
       env:
-        QUAY_NAMESPACE: ${{ inputs.namespace }}
+        QUAY_NAMESPACE: ${{ steps.namespace.outputs.value }}
         QUAY_API_TOKEN: ${{ inputs.api-token }}
         QUAY_REPOSITORY: ${{ inputs.repository }}
         QUAY_FILE: ${{ inputs.description-file }}
@@ -77,7 +84,7 @@ runs:
             -r -f "$GITHUB_ACTION_PATH/markdown.jq")
         fi
         curl -fsSL --retry 3 --retry-delay 5 --retry-connrefused \
-          -X PUT "https://quay.io/api/v1/repository/${QUAY_NAMESPACE%%+*}/$QUAY_REPOSITORY" \
+          -X PUT "https://quay.io/api/v1/repository/$QUAY_NAMESPACE/$QUAY_REPOSITORY" \
           -H "Authorization: Bearer $QUAY_API_TOKEN" \
           -H "Content-Type: application/json" \
           --data-binary "$(jq -n \
