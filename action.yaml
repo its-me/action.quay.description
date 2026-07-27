@@ -62,26 +62,15 @@ runs:
       run: |
         description=$(cat "$QUAY_FILE")
         if [ "$QUAY_URL_COMPLETION" = "true" ]; then
-          description=$(jq -n \
-            --arg mode url-completion \
-            --arg content "$description" \
-            --arg exts_raw "$QUAY_IMAGE_EXTS" \
-            --arg raw "$REPO_URL/raw/$REF_NAME/" \
-            --arg blob "$REPO_URL/blob/$REF_NAME/" \
-            --argjson max 0 \
-            -r -f "$GITHUB_ACTION_PATH/markdown.jq")
+          description=$(printf '%s' "$description" | python3 "$GITHUB_ACTION_PATH/markdown.py" url-completion \
+            --exts "$QUAY_IMAGE_EXTS" \
+            --raw "$REPO_URL/raw/$REF_NAME/" \
+            --blob "$REPO_URL/blob/$REF_NAME/")
         fi
         max_bytes=25000
         if [ "$(printf '%s' "$description" | wc -c)" -gt "$max_bytes" ]; then
           echo "::warning::Description exceeds ${max_bytes} bytes and has been truncated. Quay.io does not document a hard limit for this field; this is a conservative safety cap."
-          description=$(jq -n \
-            --arg mode truncate \
-            --arg content "$description" \
-            --arg exts_raw "" \
-            --arg raw "" \
-            --arg blob "" \
-            --argjson max "$max_bytes" \
-            -r -f "$GITHUB_ACTION_PATH/markdown.jq")
+          description=$(printf '%s' "$description" | python3 "$GITHUB_ACTION_PATH/markdown.py" truncate --max "$max_bytes")
         fi
         curl -fsSL --retry 3 --retry-delay 5 --retry-connrefused \
           -X PUT "https://quay.io/api/v1/repository/$QUAY_NAMESPACE/$QUAY_REPOSITORY" \

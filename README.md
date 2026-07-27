@@ -5,9 +5,10 @@ markdown file.
 
 ## Why this exists
 
-- It's a plain composite action — a handful of `curl`/`jq` calls —
-  with no Docker daemon required to start it, so it runs on minimal
-  runners, including this account's `ubuntu-slim` runner.
+- It's a plain composite action — `curl`/`jq` calls plus a small
+  Python script for the regex-heavy markdown rewriting — with no
+  Docker daemon required to start it, so it runs on minimal runners,
+  including this account's `ubuntu-slim` runner.
 - It parses Quay's `org+robotname` robot-account username format
   automatically, rather than expecting the namespace pre-split.
 - It rewrites relative markdown links/images to absolute GitHub URLs
