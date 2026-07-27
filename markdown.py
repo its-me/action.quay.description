@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Markdown transformations for the description content, invoked as
 # `python3 markdown.py MODE [options]` with content piped on stdin.
 # Kept separate from action.yaml so the regex-heavy logic can be read,
