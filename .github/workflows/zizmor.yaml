@@ -18,4 +18,4 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: its-me/action.zizmor@ff06ae628ae4304e6d711c1c61c761b9d097c96e # v1.0.1
+      - uses: its-me/action.zizmor@584452e9b255076750db37bedafd7db108da99bb # v1.0.2
